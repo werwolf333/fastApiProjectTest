@@ -1,0 +1,26 @@
+.grayscale {
+    width: 345px;
+    height: 250px;
+    filter: grayscale(100%); /* Применяем черно-белый фильтр */
+}
+#chatContainer {
+    max-width: 700px;
+    margin: auto;
+    text-align: center;
+}
+#messages {
+    height: 300px; /* Фиксированная высота для окна сообщений */
+    overflow-y: auto; /* Вертикальная прокрутка при переполнении */
+    border: 1px solid #ccc; /* Граница */
+    border-radius: 5px; /* Закругленные углы */
+    padding: 10px; /* Отступы внутри окна */
+    background-color: #f9f9f9; /* Цвет фона */
+    text-align: left; /* Выравнивание текста по левому краю */
+}
+.message {
+    padding: 5px; /* Отступы для каждого сообщения */
+    border-bottom: 1px solid #ddd; /* Граница между сообщениями */
+}
+.message:last-child {
+    border-bottom: none; /* Убираем нижнюю границу у последнего сообщения */
+}
