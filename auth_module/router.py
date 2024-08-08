@@ -1,13 +1,13 @@
 from fastapi.security import OAuth2PasswordRequestForm
+from pydantic import EmailStr
 from sqlalchemy.orm import Session
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse
 from datetime import timedelta
 from database import get_db
 from auth_module.auth import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
-from auth_module import crud, schemas
+from auth_module import crud, schemas, models
 from fastapi import APIRouter, Depends, Form, Request
-from pydantic import EmailStr
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -30,17 +30,23 @@ async def register_user(
     db_user = crud.get_user_by_username(db, username=username)
     if db_user:
         return templates.TemplateResponse("auth_module/register.html", {"request": request, "error": "Username already registered"})
-    # Проверяем правильность email
+
+    # Проверяем, существует ли пользователь с таким email
+    db_email_user = crud.get_user_by_email(db, email=email)  # Предполагаем, что эта функция определена
+    if db_email_user:
+        return templates.TemplateResponse("auth_module/register.html", {"request": request, "error": "Email already registered"})
+
+    # Проверяем правильность email с помощью Pydantic
     try:
-        valid_email = EmailStr(email)  # Пытаемся создать экземпляр EmailStr для валидации
-    except Exception:  # Отлавливаем все исключения
+        valid_email = schemas.UserCreate(username=username, email=email, password=password).email
+    except ValueError:
         return templates.TemplateResponse("auth_module/register.html", {"request": request, "error": "Invalid email address"})
 
     # Создаем нового пользователя
     user = schemas.UserCreate(username=username, email=valid_email, password=password)
     try:
         crud.create_user(db=db, user=user)
-    except Exception:  # Отлавливаем все исключения
+    except Exception:
         return templates.TemplateResponse("auth_module/register.html", {"request": request, "error": "Error while creating user"})
 
     return templates.TemplateResponse("auth_module/login.html", {"request": request})
