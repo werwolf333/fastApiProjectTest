@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from database import init_db
-from chat import router as chat_router
+from chat_module import router as chat_router
 from auth_module import router as auth_router
 
 app = FastAPI()

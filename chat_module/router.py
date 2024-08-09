@@ -3,8 +3,8 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 from fastapi.templating import Jinja2Templates
 from auth_module.auth import verify_token
-from chat.connection_manager import ConnectionManager
-from chat.models import Room
+from chat_module.connection_manager import ConnectionManager
+from chat_module.models import Room
 from database import get_db, SessionLocal
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from fastapi import HTTPException, Depends
@@ -20,7 +20,7 @@ async def get_main(request: Request, db: Session = Depends(get_db)):
     username = token.get("sub")
     rooms = db.query(Room).all()
     room_names = [room.name for room in rooms]
-    return templates.TemplateResponse("chat/main.html",
+    return templates.TemplateResponse("chat_module/main.html",
                                       {"request": request, "room_names": room_names, "username": username})
 
 
@@ -50,9 +50,9 @@ async def get_chat_room(
     username = token.get("sub")
     room = db.query(Room).filter(Room.name == room_name).first()
     if room:
-        return templates.TemplateResponse("chat/chat.html", {"request": request, "room_name": room_name, "username": username})
+        return templates.TemplateResponse("chat_module/chat.html", {"request": request, "room_name": room_name, "username": username})
     else:
-        return templates.TemplateResponse("chat/404.html", {"request": request})
+        return templates.TemplateResponse("chat_module/404.html", {"request": request})
 
 
 @router.delete("/rooms/{room_name}")
