@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Заголовок</title>
     <link href="/static/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/static/chat/main.css">
+    <link rel="stylesheet" href="/static/chat_module/main.css">
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -31,7 +31,7 @@
             </div>
         </div>
 
-        <button class="btn btn-secondary" onclick="showForm()">Создать новую</button>
+        <button class="btn btn-secondary" onclick="showForm()">Форма создания комнаты</button>
         <br>
         <div id="newRoomForm" class="mt-3" style="display:none;">
             <form action="rooms/submit" method="post">
@@ -39,7 +39,7 @@
                     <label for="roomName">Имя новой комнаты</label>
                     <input type="text" class="form-control" id="roomName" name="roomName" placeholder="Введите имя новой комнаты" required>
                 </div>
-                <button type="submit" class="btn btn-primary">принять</button>
+                <button type="submit" class="btn btn-primary">создать комнату</button>
             </form>
         </div>
         <br>
@@ -64,6 +64,6 @@
     <script src="/static/jquery-3.5.1.slim.min.js"></script>
     <script src="/static/popper.min.js"></script>
     <script src="/static/bootstrap.min.js"></script>
-    <script src="/static/chat/main.js"></script>
+    <script src="/static/chat_module/main.js"></script>
 </body>
 </html>

@@ -6,11 +6,11 @@ from auth_module.auth import verify_token
 from chat_module.connection_manager import ConnectionManager
 from chat_module.models import Room
 from database import get_db, SessionLocal
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
-from fastapi import HTTPException, Depends
+from fastapi import WebSocket, WebSocketDisconnect, FastAPI, APIRouter, HTTPException, Depends
 
 manager = ConnectionManager()
 router = APIRouter()
+app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
 
@@ -59,22 +59,22 @@ async def get_chat_room(
 async def delete_room(room_name: str, db: Session = Depends(get_db)):
     room = db.query(Room).filter(Room.name == room_name).first()
     if room:
+        await manager.disconnect_all(room_name)
         db.delete(room)
         db.commit()
         return RedirectResponse(url="/rooms", status_code=303)
     else:
         raise HTTPException(status_code=404, detail="Комната не найдена")
 
+app.include_router(router)
+
 
 @router.websocket("/ws/{room}")
 async def websocket_endpoint(websocket: WebSocket, room: str):
-    # Проверьте токен, чтобы получить имя пользователя
-    token = verify_token(websocket)  # Здесь может потребоваться изменить метод в зависимости от вашей реализации
+    token = verify_token(websocket)
     username = token.get("sub")
+    await manager.connect(websocket, room, username)
 
-    await manager.connect(websocket, room, username)  # Передаем имя пользователя
-
-    # Проверьте, существует ли комната
     db = SessionLocal()
     room_in_db = db.query(Room).filter(Room.name == room).first()
     if not room_in_db:

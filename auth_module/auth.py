@@ -4,7 +4,9 @@ from datetime import datetime, timedelta
 import os
 from dotenv import load_dotenv
 from fastapi import HTTPException, Request
+import logging
 
+logging.basicConfig(level=logging.INFO)
 
 load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY")
@@ -27,9 +29,11 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
 def verify_token(request: Request):
     token = request.cookies.get("access_token")
     if not token:
+        logging.error("Token not found in cookies.")
         raise HTTPException(status_code=403, detail="Could not validate credentials")
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
     except JWTError:
+        logging.error("JWT token decoding failed.")
         raise HTTPException(status_code=403, detail="Could not validate credentials")
