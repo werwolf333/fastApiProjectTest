@@ -1,9 +1,20 @@
-let ws;
-const roomName = window.location.pathname.split("/")[2];
-const roomNameDecode = decodeURIComponent(window.location.pathname.split("/")[2]);
+function getCookieValue(name) {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        const [cookieName, cookieValue] = cookie.trim().split('=');
+        if (cookieName === name) {
+            return decodeURIComponent(cookieValue);
+        }
+    }
+    return null;
+}
 
-function connect() {
-    ws = new WebSocket(`ws://localhost:8000/ws/${roomName}`);
+const roomName = window.location.pathname.split("/")[2];
+const token = getCookieValue("access_token");
+
+if (token) {
+    const ws = new WebSocket(`ws://localhost:8000/ws/${roomName}?token=${token}`);
+
     ws.onmessage = function(event) {
         const messages = document.getElementById('messages');
         const message = document.createElement('li');
@@ -11,40 +22,24 @@ function connect() {
         message.appendChild(content);
         messages.appendChild(message);
     };
+
+    function sendMessage(event) {
+        event.preventDefault();
+        const input = document.getElementById("messageText");
+        ws.send(input.value);
+        input.value = '';
+    }
+
+    function leaveRoom() {
+        window.location.href = 'http://localhost:8000/rooms';
+    }
+
+    ws.onclose = function(event) {};
+
+    ws.onerror = function(error) {};
+
+} else {
+    alert("Token not found in cookies.");
 }
 
-function sendMessage(event) {
-    event.preventDefault();
-    const input = document.getElementById("messageText");
-    ws.send(input.value);
-    input.value = '';
-}
-
-function leaveRoom() {
-    window.location.href = 'http://localhost:8000/rooms';
-}
-
-function leaveAndCloseRoom() {
-    const encodedRoomName = encodeURIComponent(roomName); // используем roomName вместо roomNameDecode
-    fetch(`http://localhost:8000/rooms/${roomNameDecode}`, {
-        method: 'DELETE',
-    })
-    .then(response => {
-        if (response.ok) {
-            // Успешное удаление, перенаправляем на главную страницу
-            window.location.href = "http://localhost:8000/rooms";
-        } else {
-            // Обработка ошибки, если комната не найдена или другая ошибка
-            console.error('Ошибка при удалении комнаты:', response.statusText);
-        }
-    })
-    .catch(error => {
-        console.error('Ошибка сети:', error);
-    });
-}
-
-function redirectToRegister() {
-    window.location.href = "http://localhost:8000/login";
-}
-
-connect();  // Устанавливаем соединение при загрузке страницы
+document.getElementById("messageForm").onsubmit = sendMessage;

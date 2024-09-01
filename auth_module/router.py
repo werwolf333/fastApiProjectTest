@@ -72,8 +72,13 @@ async def login_for_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
 
-    # Устанавливаем токен в куки
     response = RedirectResponse(url="/rooms", status_code=303)
-    response.set_cookie(key="access_token", value=access_token, httponly=True)
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=False,  # Делает токен доступным в JavaScript
+        samesite="Strict",  # Опционально: ограничивает использование куки в пределах того же сайта
+        secure=True  # Опционально: требует HTTPS для передачи куки
+    )
 
     return response

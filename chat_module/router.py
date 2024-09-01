@@ -2,7 +2,8 @@ from fastapi import Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 from fastapi.templating import Jinja2Templates
-from auth_module.auth import verify_token
+from auth_module.auth import verify_token, SECRET_KEY, ALGORITHM
+from jose import JWTError, jwt
 from chat_module.connection_manager import ConnectionManager
 from chat_module.models import Room
 from database import get_db, SessionLocal
@@ -71,8 +72,19 @@ app.include_router(router)
 
 @router.websocket("/ws/{room}")
 async def websocket_endpoint(websocket: WebSocket, room: str):
-    token = verify_token(websocket)
-    username = token.get("sub")
+    token = websocket.query_params.get("token")
+
+    if not token:
+        await websocket.close()
+        return
+
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username = payload.get("sub")
+    except JWTError:
+        await websocket.close()
+        return
+
     await manager.connect(websocket, room, username)
 
     db = SessionLocal()
