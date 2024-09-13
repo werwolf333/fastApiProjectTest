@@ -25,23 +25,17 @@ async def register_user(
     password: str = Form(...),
     db: Session = Depends(get_db)
 ):
-    # Проверяем, существует ли пользователь с таким именем
     db_user = crud.get_user_by_username(db, username=username)
     if db_user:
         return templates.TemplateResponse(request, "auth_module/register.html", {"error": "Username already registered"})
-
-    # Проверяем, существует ли пользователь с таким email
     db_email_user = crud.get_user_by_email(db, email=email)
     if db_email_user:
         return templates.TemplateResponse(request, "auth_module/register.html", {"error": "Email already registered"})
-
-    # Проверяем правильность email с помощью Pydantic
     try:
         valid_email = schemas.UserCreate(username=username, email=email, password=password).email
     except ValueError:
         return templates.TemplateResponse(request, "auth_module/register.html", {"error": "Invalid email address"})
 
-    # Создаем нового пользователя
     user = schemas.UserCreate(username=username, email=valid_email, password=password)
     try:
         crud.create_user(db=db, user=user)
@@ -76,9 +70,9 @@ async def login_for_access_token(
     response.set_cookie(
         key="access_token",
         value=access_token,
-        httponly=False,  # Делает токен доступным в JavaScript
-        samesite="Strict",  # Опционально: ограничивает использование куки в пределах того же сайта
-        secure=True  # Опционально: требует HTTPS для передачи куки
+        httponly=False,
+        samesite="Strict",
+        secure=False
     )
 
     return response
