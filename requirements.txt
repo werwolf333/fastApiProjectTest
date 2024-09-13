@@ -9,10 +9,12 @@ ecdsa==0.19.0
 email_validator==2.2.0
 exceptiongroup==1.2.2
 fastapi==0.112.0
+fastapi-sessions==0.3.2
 greenlet==3.0.3
 h11==0.14.0
 httptools==0.6.1
 idna==3.7
+itsdangerous==2.2.0
 Jinja2==3.1.4
 MarkupSafe==2.1.5
 passlib==1.7.3
