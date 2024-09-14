@@ -64,27 +64,22 @@ function leaveAndCloseRoom() {
         },
     })
     .then(response => {
-        console.log('Статус ответа:', response.status);
-        // Проверяем, есть ли ответ в формате JSON
-        return response.text().then(text => {
-            let data;
-            try {
-                data = JSON.parse(text);
-            } catch (error) {
-                data = { detail: text };
-            }
-            return { status: response.status, data };
-        });
-    })
-    .then(({ status, data }) => {
-        console.log('Ответ сервера:', data);
-        if (data.detail) {
-            console.error('Ошибка:', data.detail);
-        }
-        if (status === 200) {
-            window.location.href = "http://localhost:8000/rooms"; // Успешное удаление
+        // Проверяем, если это HTML, перенаправляем
+        if (response.headers.get('content-type').includes('text/html')) {
+            return response.text().then(html => {
+                document.open();
+                document.write(html);  // Перезаписываем текущую страницу на новую
+                document.close();
+            });
         } else {
-            console.error('Ошибка при удалении комнаты:', data);
+            return response.json();
+        }
+    })
+    .then(data => {
+        if (data && data.detail) {
+            console.log('Ответ сервера:', data);
+        } else {
+            console.log('Комната успешно удалена.');
         }
     })
     .catch(error => {
